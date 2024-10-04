@@ -2,6 +2,7 @@
 
 (() => {
   const APP_URL = "https://master-dev.bricsys247.com";
+  const COOKIE_ACCESS_TOKEN = "access_token";
 
   // note: these const's should match in mother files
   const Messages = {
@@ -10,24 +11,10 @@
     updateUi: "UpdateExtensionWithNewData",
   };
 
-  //   if (window.scriptInjected || !window?.location.href.startsWith(APP_URL)) {
-  //     console.log("already init");
-  //     return;
-  //   } else {
-  //     window.scriptInjected = true;
-  //   }
-
   chrome.runtime.sendMessage({
     type: "test",
     data: 1,
   });
-
-  const log = (...a) => {
-    console.log(...a);
-    chrome.extension.getBackgroundPage().console.log(...a);
-  };
-
-  log(1, window?.location.href);
 
   const getToken = () => {
     const value = `; ${document.cookie}`;
@@ -39,50 +26,53 @@
     window.location.href.split("/project/")[1]?.match(/^([^\/]*)/)?.[1];
 
   // Fetch subscriptions
-  async function fetchSubscriptions() {
-    const token = getToken();
-    const projectId = getProjectId();
-
-    if (!token || !projectId) {
-      log("NAND", { token, projectId });
-      return;
-    }
-
+  const fetchSubscriptions = async () => {
     try {
-      const data = await fetch(
+      const token = getToken();
+      const projectId = getProjectId();
+
+      if (!token || !projectId) {
+        throw new Error("Missing properties for fetch");
+      }
+
+      const items = await fetch(
         `https://master-dev.bricsys247.com/api/rest/FolderSubscription?p=${projectId}&expand=FOLDER`,
         {
           headers: {
             accept: "application/json, text/plain, */*",
             authorization: `Bearer ${token}`,
           },
-          // referrer:"https://master-dev.bricsys247.com/app/project/622/folder/31620",
           referrerPolicy: "strict-origin-when-cross-origin",
           body: null,
           method: "GET",
           mode: "cors",
           credentials: "include",
         }
-      );
+      ).then(async (stream) => {
+        const json = await stream.json();
+        return json.Items;
+      });
+      if (!Array.isArray(items)) {
+        throw new Error("data has incorrect format");
+      }
 
       chrome.runtime.sendMessage({
         type: Messages.updateUi,
         data,
       });
-
-      log("Send Data", data);
     } catch (error) {
-      log("RROR Data", error);
+      chrome.runtime.sendMessage({
+        type: Messages.updateUi,
+        data: {
+          error,
+        },
+      });
     }
-  }
+  };
 
-  chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
-    console.log(
-      "ONmesage",
-      { request, sender, sendResponse },
-      window.location.origin
-    );
-
+  //  message from popup.js
+  chrome.runtime.onMessage.addListener((request, ...m) => {
+    console.log("@content.js", request, ...m);
     if (request.type === Messages.refetch) {
       fetchSubscriptions();
     }

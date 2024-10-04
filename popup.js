@@ -6,39 +6,37 @@
     updateUi: "UpdateExtensionWithNewData",
   };
 
-  const log = (...a) => {
-    console.log(...a);
-    chrome.extension.getBackgroundPage().console.log(...a);
-  };
+  const btnRefresh = document.getElementById("refetchButton");
+  const content = document.getElementById("content");
+  let preventSpamming = false;
 
-  log("oi");
-
-  chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
-    log("@popup - ", { message, sender, sendResponse });
-
-    if (document.getElementById("content")) {
-      document.getElementById("content").innerText = JSON.stringify(message);
-    }
-
-    if (message.type === Messages.updateUi) {
-      const updatedData = message.data;
-      log("Data received in popup:", updatedData);
-
-      if (document.getElementById("content")) {
-        document.getElementById("content").innerText =
-          JSON.stringify(updatedData);
-      }
-      // Update the popup UI with the received data
-      // Example: document.getElementById('dataDisplay').innerText = JSON.stringify(updatedData);
+  btnRefresh?.addEventListener("click", () => {
+    if (!preventSpamming) {
+      preventSpamming = true;
+      chrome.runtime.sendMessage({ type: Messages.refetch });
+      setTimeout(() => (preventSpamming = false), 5 * 1000);
     }
   });
 
-  console.log(document.getElementById("refetchButton"));
+  const renderContent = (items) => {
+    if (!content) {
+      document.body.innerHTML = "no content...";
+    }
+    if (!Array.isArray(items)) {
+      content.innerHTML = `<div class="error"> ${JSON.stringify(items)} </div>`;
+    }
 
-  // Trigger refetch on button click
-  document
-    .getElementById("refetchButton")
-    ?.addEventListener("click", async () => {
-      chrome.runtime.sendMessage({ type: Messages.refetch });
-    });
+    content.innerHTML = "";
+    for (const sub of items) {
+      content.innerHTML += `<div class="list-item"> ${sub.Name || "-"} </div>`;
+    }
+  };
+
+  chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
+    console.log("@popup.js  ", { message, sender, sendResponse });
+
+    if (message.type === Messages.updateUi) {
+      renderContent(message.data);
+    }
+  });
 })();

@@ -1,13 +1,34 @@
-## TODO
+## Notes
 
-- background.js does not catch messages from injected.js
 - only works for 1 tab with 1 projectId (is an issue?)
 
 ### Help
 
 Sending messages: https://stackoverflow.com/questions/9106519/port-error-could-not-establish-connection-receiving-end-does-not-exist-in-chr
 
+see history for injecting script.
+
 ## FLOW
+
+1. Popup Script (popup.js):
+
+   - User clicks the "Refetch" button.
+   - Sends a message (Messages.refetch) to the background script to trigger data fetching.
+   - Listens for incoming data (Messages.updateUi) from the background script and updates the UI with the received data.
+
+2. Background Script (background.js):
+
+   - Receives the Messages.refetch request from the popup script.
+   - Queries all open tabs with URLs matching 24/7
+   - Sends a Messages.refetch message to the content script in all matching tabs to initiate data fetching.
+   - Receives data from the content script after the fetch and forwards it to the popup script via Messages.updateUi.
+
+3. Content Script (content.js):
+   - Receives the Messages.refetch message from the background script.
+   - Fetches the subscription data from the app's API.
+   - Sends the fetched data (Messages.updateUi) back to the background script.
+
+### FLow - V3 (current)
 
 ### FLow - V2
 
