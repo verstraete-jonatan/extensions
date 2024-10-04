@@ -3,28 +3,42 @@
   const Messages = {
     refetch: "PleaseRefetchData",
     updatedData: "UpdatedDataFromHost",
-    updateExtension: "UpdateExtensionWithNewData",
+    updateUi: "UpdateExtensionWithNewData",
   };
 
-  console.log("oi");
+  const log = (...a) => {
+    console.log(...a);
+    chrome.extension.getBackgroundPage().console.log(...a);
+  };
+
+  log("oi");
 
   chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
-    console.log("@popup - ", { message, sender, sendResponse });
+    log("@popup - ", { message, sender, sendResponse });
 
     if (document.getElementById("content")) {
       document.getElementById("content").innerText = JSON.stringify(message);
     }
 
-    if (message.type === Messages.updateExtension) {
+    if (message.type === Messages.updateUi) {
       const updatedData = message.data;
-      console.log("Data received in popup:", updatedData);
+      log("Data received in popup:", updatedData);
+
+      if (document.getElementById("content")) {
+        document.getElementById("content").innerText =
+          JSON.stringify(updatedData);
+      }
       // Update the popup UI with the received data
       // Example: document.getElementById('dataDisplay').innerText = JSON.stringify(updatedData);
     }
   });
 
+  console.log(document.getElementById("refetchButton"));
+
   // Trigger refetch on button click
-  document.getElementById("refetchButton")?.addEventListener("click", () => {
-    chrome.runtime.sendMessage({ type: Messages.refetch });
-  });
+  document
+    .getElementById("refetchButton")
+    ?.addEventListener("click", async () => {
+      chrome.runtime.sendMessage({ type: Messages.refetch });
+    });
 })();

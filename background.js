@@ -5,7 +5,7 @@
   const Messages = {
     refetch: "PleaseRefetchData",
     updatedData: "UpdatedDataFromHost",
-    updateExtension: "UpdateExtensionWithNewData",
+    updateUi: "UpdateExtensionWithNewData",
   };
 
   // hello world mesage in console of extsion
@@ -33,18 +33,18 @@
 
   // Inject injected.js into all new tabs on every url change
   // need to checkin injected.js if the script was already injected.
-  chrome.tabs.onUpdated.addListener((tabId, changeInfo, tab) => {
-    if (
-      changeInfo.status === "complete" &&
-      tab.url?.startsWith(APP_URL) &&
-      !tab.url.includes("/#state=")
-    ) {
-      chrome.scripting.executeScript({
-        target: { tabId, allFrames: true },
-        files: ["injected.js"],
-      });
-    }
-  });
+  // chrome.tabs.onUpdated.addListener((tabId, changeInfo, tab) => {
+  //   if (
+  //     changeInfo.status === "complete" &&
+  //     tab.url?.startsWith(APP_URL) &&
+  //     !tab.url.includes("/#state=")
+  //   ) {
+  //     chrome.scripting.executeScript({
+  //       target: { tabId, allFrames: true },
+  //       files: ["injected.js"],
+  //     });
+  //   }
+  // });
 
   // chrome.runtime.onMessageExternal.addListener(
   //   (request, sender, sendResponse) => {
@@ -53,22 +53,29 @@
   //   }
   // );
 
+  let d = false;
   // Listen for messages from injected scripts
   chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
     console.log("@background - ", { message, sender, sendResponse });
+    if (d) {
+      return;
+    }
 
     // // message from injected: Forward data to popup
     // if (message.type === Messages.updatedData) {
+    //   d = true;
     //   chrome.runtime.sendMessage({
-    //     type: Messages.updateExtension,
+    //     type: Messages.updateUi,
     //     data: message.data,
     //   });
     // }
 
     // message from popup/extension: send refetch to injected
     if (message.type === Messages.refetch) {
+      d = true;
       chrome.tabs.query({ url: `${APP_URL}/*` }, (tabs) => {
         const firstTabid = tabs[0]?.id;
+        console.log({ firstTabid });
         if (firstTabid) {
           chrome.tabs.sendMessage(firstTabid, { type: Messages.refetch });
         }

@@ -5,7 +5,7 @@
   const Messages = {
     refetch: "PleaseRefetchData",
     updatedData: "UpdatedDataFromHost",
-    updateExtension: "UpdateExtensionWithNewData",
+    updateUi: "UpdateExtensionWithNewData",
   };
 
   // hello world mesage in console of extsion
@@ -73,7 +73,7 @@
     // message from injected: Forward data to popup
     if (message.type === Messages.updatedData) {
       chrome.runtime.sendMessage({
-        type: Messages.updateExtension,
+        type: Messages.updateUi,
         data: message.data,
       });
     }

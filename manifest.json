@@ -6,28 +6,20 @@
   "permissions": ["activeTab", "scripting", "tabs", "nativeMessaging"],
   "host_permissions": ["https://master-dev.bricsys247.com/*"],
   "background": {
-    "service_worker": "background.js"
+    "service_worker": "background.js",
+    "type": "module"
   },
   "action": {
     "default_popup": "popup.html"
   },
-  "web_accessible_resources": [
-    {
-      "resources": ["injected.js"],
-      "matches": ["https://master-dev.bricsys247.com/*"]
-    }
-  ],
+
   "content_scripts": [
     {
       "matches": ["https://master-dev.bricsys247.com/*"],
-      "js": ["content.js"],
-      "run_at": "document_start"
+      "js": ["content.js"]
     }
   ],
 
-  "externally_connectable": {
-    "matches": ["https://master-dev.bricsys247.com/*"]
-  },
   "icons": {
     "16": "images/icon-16.png",
     "32": "images/icon-32.png",

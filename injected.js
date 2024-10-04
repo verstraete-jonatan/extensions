@@ -2,6 +2,8 @@
   const APP_URL = "https://master-dev.bricsys247.com";
   const COOKIE_ACCESS_TOKEN = "access_token";
 
+  return;
+
   if (window.scriptInjected || !window?.location.href.startsWith(APP_URL)) {
     console.log("already init");
     return;
@@ -13,7 +15,7 @@
   const Messages = {
     refetch: "PleaseRefetchData",
     updatedData: "UpdatedDataFromHost",
-    updateExtension: "UpdateExtensionWithNewData",
+    updateUi: "UpdateExtensionWithNewData",
   };
 
   // TEST POST mechanism
