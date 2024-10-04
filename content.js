@@ -58,7 +58,7 @@
 
       chrome.runtime.sendMessage({
         type: Messages.updateUi,
-        data,
+        data: items,
       });
     } catch (error) {
       chrome.runtime.sendMessage({

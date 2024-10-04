@@ -15,17 +15,12 @@
     console.log("%c24/7 %s", css, "Is live!");
   });
 
-  let d = false;
   // Listen for messages from injected scripts
   chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
     console.log("@background.js", { message, sender, sendResponse });
-    if (d) {
-      return;
-    }
 
-    // message from popup/extension: send refetch
+    // forward message to a 247 tab, aka. the content.js
     if (message.type === Messages.refetch) {
-      d = true;
       chrome.tabs.query({ url: `${APP_URL}/*` }, (tabs) => {
         const firstTabid = tabs[0]?.id;
         if (firstTabid) {

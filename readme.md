@@ -19,7 +19,7 @@ see history for injecting script.
 2. Background Script (background.js):
 
    - Receives the Messages.refetch request from the popup script.
-   - Queries all open tabs with URLs matching 24/7
+   - Queries all open tabs with URLs matching 24/7 and forwards message from popup to content on a certain tab.
    - Sends a Messages.refetch message to the content script in all matching tabs to initiate data fetching.
    - Receives data from the content script after the fetch and forwards it to the popup script via Messages.updateUi.
 
