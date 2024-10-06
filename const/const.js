@@ -7,4 +7,9 @@ const Messages = {
   updatedData: "UpdatedDataFromHost",
   updateUi: "UpdateExtensionWithNewData",
   contentActive: "HiImActive!",
+  emitTabId: "HellooowThisIsYourTabId",
 };
+
+for (const k in Messages) {
+  Messages[k] = "__EX_SUBS__" + Messages[k];
+}

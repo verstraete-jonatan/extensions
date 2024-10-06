@@ -1,15 +1,27 @@
 (() => {
-  // note: these const's should match in other files
-  const Messages = {
-    refetch: "PleaseRefetchData",
-    updatedData: "UpdatedDataFromHost",
-    updateUi: "UpdateExtensionWithNewData",
-    contentActive: "HiImActive!",
-  };
-
   const btnRefresh = document.getElementById("refetchButton");
   const content = document.getElementById("content");
   let preventSpamming = false;
+
+  const renderContent = (data) => {
+    if (!content || !data) {
+      document.body.innerHTML = "no content...";
+    }
+    if (!Array.isArray(data)) {
+      content.innerHTML = `<div class="error"> ${JSON.stringify(data)} </div>`;
+    }
+
+    content.innerHTML =
+      "<p> Last updated: " + new Date().toISOString() + "</p>";
+    for (const project of data) {
+      content.innerHTML += `<h1>${project.Name}</h1>`;
+      content.innerHTML += `<ul>`;
+      for (const sub of project.subs) {
+        content.innerHTML += `<li> ${sub.Name || "-"} </li>`;
+      }
+      content.innerHTML += `</ul>`;
+    }
+  };
 
   btnRefresh?.addEventListener("click", () => {
     if (!preventSpamming) {
@@ -19,28 +31,9 @@
     }
   });
 
-  const renderContent = (items) => {
-    if (!content) {
-      document.body.innerHTML = "no content...";
-    }
-    if (!Array.isArray(items)) {
-      content.innerHTML = `<div class="error"> ${JSON.stringify(items)} </div>`;
-    }
-
-    content.innerHTML = "";
-    for (const sub of items) {
-      content.innerHTML += `<div class="list-item"> ${sub.Name || "-"} </div>`;
-    }
-  };
-
   // watches for all messages (content.js & background.js)
   chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
     console.log("@popup.js  ", { ...message });
-
-    // chrome.runtime.sendMessage({
-    //   type: "test",
-    //   data: null,
-    // });
 
     if (message.type === Messages.updateUi) {
       renderContent(message.data);

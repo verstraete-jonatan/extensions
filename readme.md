@@ -16,7 +16,7 @@
 - (not tested) if you would open a new tab with another projectId, this should overwrite the content of the popup with sub of the new project
 - try using: chrome.runtime.connect for life long connection? performance? multi tab?
 
-## FLOW (with versions)
+## FLOWS (with versions)
 
 ### FLow - V3 (current)
 
@@ -31,6 +31,7 @@
    - Receives the Messages.refetch request from the popup script.
    - Queries all open tabs with URLs matching 24/7 and forwards message from popup to content on a certain tab.
    - Sends a Messages.refetch message to the content script in all matching tabs to initiate data fetching.
+     - we could listen on location in the content script and fetch the data if the location changes, but then this would be difficult to maintain with multiple tabs.
    - Receives data from the content script after the fetch and forwards it to the popup script via Messages.updateUi.
 
 3. Content Script (content.js):
