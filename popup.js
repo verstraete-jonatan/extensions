@@ -1,42 +1,76 @@
 (() => {
   const btnRefresh = document.getElementById("refetchButton");
-  const content = document.getElementById("content");
+  const btnClear = document.getElementById("resetButton");
+  const htmlContent = document.getElementById("content");
+
   let preventSpamming = false;
 
-  const renderContent = (data) => {
-    if (!content || !data) {
-      document.body.innerHTML = "no content...";
+  const renderContent = async () => {
+    const data = await ChromeStorage.get();
+    if (!htmlContent) {
+      document.body.innerHTML += "Uups 404?";
+      return;
+    }
+    if (!data) {
+      htmlContent.innerHTML = `<p>No content</p>`;
+      return;
     }
     if (!Array.isArray(data)) {
-      content.innerHTML = `<div class="error"> ${JSON.stringify(data)} </div>`;
+      htmlContent.innerHTML = `<p> Error: ${JSON.stringify(data)}</p>`;
+      return;
     }
 
-    content.innerHTML =
+    htmlContent.innerHTML =
       "<p> Last updated: " + new Date().toISOString() + "</p>";
     for (const project of data) {
-      content.innerHTML += `<h1>${project.Name}</h1>`;
-      content.innerHTML += `<ul>`;
+      htmlContent.innerHTML += `<h3>${project.Name}</h3>`;
+      htmlContent.innerHTML += `<ul>`;
       for (const sub of project.subs) {
-        content.innerHTML += `<li> ${sub.Name || "-"} </li>`;
+        htmlContent.innerHTML += `<li> ${sub.Name || "-"} </li>`;
       }
-      content.innerHTML += `</ul>`;
+      htmlContent.innerHTML += `</ul>`;
     }
   };
 
   btnRefresh?.addEventListener("click", () => {
     if (!preventSpamming) {
       preventSpamming = true;
-      chrome.runtime.sendMessage({ type: Messages.refetch });
+      chrome.runtime.sendMessage({
+        type: Messages.refetch,
+        for: "background",
+      });
       setTimeout(() => (preventSpamming = false), 5 * 1000);
     }
   });
 
-  // watches for all messages (content.js & background.js)
-  chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
-    console.log("@popup.js  ", { ...message });
+  btnClear?.addEventListener("click", () => {
+    ChromeStorage.clear();
+    renderContent();
+  });
 
-    if (message.type === Messages.updateUi) {
-      renderContent(message.data);
+  // watches for all messages (content.js & background.js)
+  // chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
+  //   console.log("@popup.js  ", { ...message });
+
+  //   if (message.for !== "popup") {
+  //     return;
+  //   }
+
+  //   switch (message.type) {
+  //     case Messages.updateData:
+  //       storage.set(message.data).then(renderContent);
+  //   }
+  // });
+
+  chrome.storage.onChanged.addListener((changes, areaName) => {
+    console.log("has changes");
+    if (areaName === "local" && changes[ChromeStorage.key]) {
+      renderContent();
     }
   });
+
+  console.log("Hey! I'm a popup :DD");
+
+  // init, show UI based on stored data
+  renderContent();
 })();

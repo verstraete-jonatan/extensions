@@ -1,6 +1,4 @@
 (() => {
-  "use strict";
-
   console.log(
     "%cLive %s",
     "font: 50px sans-serif; font-weight:bold; color: transparent; -webkit-text-stroke:3px #fdbb2d; background: linear-gradient(90deg, rgba(131,58,180,1) 0%, rgba(253,29,29,1) 50%, rgba(252,176,69,1) 100%);",
@@ -44,11 +42,14 @@
 
   // Fetch subscriptions
   const fetchSubscriptions = async () => {
+    let data = null;
     try {
       const token = getToken();
       if (!token) {
         throw new Error("Missing properties for fetch");
       }
+
+      //   await new Promise((r) => setTimeout(r, 5000));
 
       const projects = (await fetchAllProjects()) || [];
 
@@ -61,20 +62,16 @@
       if (!Array.isArray(projects)) {
         throw new Error("data has incorrect format");
       }
-
-      //   console.log("sending...", [...projects]);
-
-      chrome.runtime.sendMessage({
-        type: Messages.updateUi,
-        data: projects.filter(({ subs }) => subs.length),
-      });
+      data = projects.filter(({ subs }) => subs.length);
     } catch (error) {
       console.log("ERROR", error);
-      chrome.runtime.sendMessage({
-        type: Messages.updateUi,
-        data: error.message,
-      });
+      data = error.message;
     }
+    chrome.runtime.sendMessage({
+      type: Messages.updateData,
+      data,
+      for: "background",
+    });
   };
 
   /**
@@ -82,13 +79,19 @@
    */
 
   chrome.runtime.sendMessage({
-    type: Messages.contentActive,
+    type: Messages.content_active,
+    for: "background",
   });
 
   // message from background.js
-  chrome.runtime.onMessage.addListener((request) => {
-    // console.info("Message:", request.type);
-    if (request.type === Messages.refetch) {
+  chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
+    console.info("Message:", message);
+
+    if (message.for !== "content") {
+      return;
+    }
+
+    if (message.type === Messages.refetch) {
       //   console.log("Should fetch", new Date().toISOString());
       fetchSubscriptions();
     }

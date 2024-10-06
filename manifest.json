@@ -8,6 +8,7 @@
     "scripting",
     "tabs",
     "cookies",
+    "storage",
     "nativeMessaging"
   ],
   "host_permissions": ["https://master-dev.bricsys247.com/*"],

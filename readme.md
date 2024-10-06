@@ -2,29 +2,35 @@
 
 1:
 
+- Maybe can (partly?) replace messaging with using storage and watching on storage:
+  https://developer.chrome.com/docs/extensions/reference/api/storage#method-StorageArea-setAccessLevel
+
 - gets an error if the page is not yet logged in, see:
   https://developer.chrome.com/docs/extensions/reference/api/extensionTypes#type-RunAt
   https://developer.chrome.com/docs/extensions/develop/concepts/content-scripts
 
-2:
-
-- Does initial fetch from content.js as we can't really know if the projectId changed (if any)
-- cookie won't be valid after x time, need to reset cookie.
-
-  3:
+- cookie won't be valid after x time, need to reset cookie. Possibly emit this from content.js to check on an interval if the cookie is still valid. Some kind of light weight backend request I guess.
+  What does keycloak really refresh?
 
 - (not tested) if you would open a new tab with another projectId, this should overwrite the content of the popup with sub of the new project
 - try using: chrome.runtime.connect for life long connection? performance? multi tab?
 
 ## FLOWS (with versions)
 
-### FLow - V3 (current)
+### FLOW - V4
+
+same file flow as previous but with some added features:
+
+- initial message is send from content.js to notify the background.js, that that tab is active. The content will then check if the data is already fetched or not and based on that will send an fetchData request back to the content. This way we can keep track of multiple tabs.
+- the background check on tab changes
+
+### FLow - V3
 
 1. Popup Script (popup.js):
 
    - User clicks the "Refetch" button.
    - Sends a message (Messages.refetch) to the background script to trigger data fetching.
-   - Listens for incoming data (Messages.updateUi) from the background script and updates the UI with the received data.
+   - Listens for incoming data (Messages.updateData) from the background script and updates the UI with the received data.
 
 2. Background Script (background.js):
 
@@ -32,12 +38,12 @@
    - Queries all open tabs with URLs matching 24/7 and forwards message from popup to content on a certain tab.
    - Sends a Messages.refetch message to the content script in all matching tabs to initiate data fetching.
      - we could listen on location in the content script and fetch the data if the location changes, but then this would be difficult to maintain with multiple tabs.
-   - Receives data from the content script after the fetch and forwards it to the popup script via Messages.updateUi.
+   - Receives data from the content script after the fetch and forwards it to the popup script via Messages.updateData.
 
 3. Content Script (content.js):
    - Receives the Messages.refetch message from the background script.
    - Fetches the subscription data from the app's API.
-   - Sends the fetched data (Messages.updateUi) back to the background script.
+   - Sends the fetched data (Messages.updateData) back to the background script.
 
 ### FLow - V2
 
