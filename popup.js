@@ -1,9 +1,10 @@
 (() => {
-  // note: these const's should match in mother files
+  // note: these const's should match in other files
   const Messages = {
     refetch: "PleaseRefetchData",
     updatedData: "UpdatedDataFromHost",
     updateUi: "UpdateExtensionWithNewData",
+    contentActive: "HiImActive!",
   };
 
   const btnRefresh = document.getElementById("refetchButton");
@@ -32,8 +33,14 @@
     }
   };
 
+  // watches for all messages (content.js & background.js)
   chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
-    console.log("@popup.js  ", { message, sender, sendResponse });
+    console.log("@popup.js  ", { ...message });
+
+    // chrome.runtime.sendMessage({
+    //   type: "test",
+    //   data: null,
+    // });
 
     if (message.type === Messages.updateUi) {
       renderContent(message.data);

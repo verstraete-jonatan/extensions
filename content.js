@@ -1,29 +1,21 @@
-// I'm the middle man between the background and the extension
-
 (() => {
-  const APP_URL = "https://master-dev.bricsys247.com";
-  const COOKIE_ACCESS_TOKEN = "access_token";
-
-  // note: these const's should match in mother files
-  const Messages = {
-    refetch: "PleaseRefetchData",
-    updatedData: "UpdatedDataFromHost",
-    updateUi: "UpdateExtensionWithNewData",
-  };
-
-  chrome.runtime.sendMessage({
-    type: "test",
-    data: 1,
-  });
+  const css =
+    "font: 50px sans-serif; font-weight:bold; color: transparent; -webkit-text-stroke:3px #fdbb2d; background: linear-gradient(90deg, rgba(131,58,180,1) 0%, rgba(253,29,29,1) 50%, rgba(252,176,69,1) 100%);";
+  console.log("%cLive %s", css, "247!");
 
   const getToken = () => {
     const value = `; ${document.cookie}`;
-    const parts = value.split(`; ${COOKIE_ACCESS_TOKEN}=`);
+    const parts = value.split(`; ${COOKIE_TOKEN}=`);
     if (parts.length === 2) return parts.pop().split(";").shift();
   };
 
   const getProjectId = () =>
     window.location.href.split("/project/")[1]?.match(/^([^\/]*)/)?.[1];
+
+  chrome.runtime.sendMessage({
+    type: Messages.contentActive,
+    data: null,
+  });
 
   // Fetch subscriptions
   const fetchSubscriptions = async () => {
@@ -70,10 +62,10 @@
     }
   };
 
-  //  message from popup.js
-  chrome.runtime.onMessage.addListener((request, ...m) => {
-    console.log("@content.js", request, ...m);
+  // message from background.js
+  chrome.runtime.onMessage.addListener((request) => {
     if (request.type === Messages.refetch) {
+      console.log("Should fetch", new Date().toISOString());
       fetchSubscriptions();
     }
   });

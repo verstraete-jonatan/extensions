@@ -1,14 +1,24 @@
-## Notes
+## TODO
 
-- only works for 1 tab with 1 projectId (is an issue?)
+1:
 
-### Help
+- gets an error if the page is not yet logged in, see:
+  https://developer.chrome.com/docs/extensions/reference/api/extensionTypes#type-RunAt
+  https://developer.chrome.com/docs/extensions/develop/concepts/content-scripts
 
-Sending messages: https://stackoverflow.com/questions/9106519/port-error-could-not-establish-connection-receiving-end-does-not-exist-in-chr
+2:
 
-see history for injecting script.
+- Does initial fetch from content.js as we can't really know if the projectId changed (if any)
+- cookie won't be valid after x time, need to reset cookie.
 
-## FLOW
+  3:
+
+- (not tested) if you would open a new tab with another projectId, this should overwrite the content of the popup with sub of the new project
+- try using: chrome.runtime.connect for life long connection? performance? multi tab?
+
+## FLOW (with versions)
+
+### FLow - V3 (current)
 
 1. Popup Script (popup.js):
 
@@ -27,8 +37,6 @@ see history for injecting script.
    - Receives the Messages.refetch message from the background script.
    - Fetches the subscription data from the app's API.
    - Sends the fetched data (Messages.updateUi) back to the background script.
-
-### FLow - V3 (current)
 
 ### FLow - V2
 
@@ -57,3 +65,9 @@ see history for injecting script.
 3. `background.js` listens to the contentScript and forwards it again to the popup-script which render the data (if any).
    - background script is the only script which can listen to messages form all tabs.
    - The background script can listen to messages from all tabs, facilitating communication across the extension.
+
+### Help
+
+Sending messages: https://stackoverflow.com/questions/9106519/port-error-could-not-establish-connection-receiving-end-does-not-exist-in-chr
+
+see history for injecting script.

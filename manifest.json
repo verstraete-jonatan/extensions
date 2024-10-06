@@ -3,7 +3,13 @@
   "name": "24/7 Live",
   "version": "1.0",
   "description": "View your subscriptions from the online app.",
-  "permissions": ["activeTab", "scripting", "tabs", "nativeMessaging"],
+  "permissions": [
+    "activeTab",
+    "scripting",
+    "tabs",
+    "cookies",
+    "nativeMessaging"
+  ],
   "host_permissions": ["https://master-dev.bricsys247.com/*"],
   "background": {
     "service_worker": "background.js",
@@ -16,7 +22,7 @@
   "content_scripts": [
     {
       "matches": ["https://master-dev.bricsys247.com/*"],
-      "js": ["content.js"]
+      "js": ["const/const.js", "content.js"]
     }
   ],
 
